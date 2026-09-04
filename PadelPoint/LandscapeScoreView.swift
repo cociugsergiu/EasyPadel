@@ -48,23 +48,31 @@ struct LandscapeScoreView: View {
                 }
 
                 VStack {
-                    HStack {
+                    // Fixed-size frames (rather than the old .padding(16),
+                    // which made both the tap-target size AND the gap
+                    // between icons, so it couldn't set either
+                    // independently) at Apple's 44pt minimum tap target,
+                    // with a tight explicit spacing between them — also
+                    // gives HoldToResetButton (a bare 34pt circle) the same
+                    // footprint as the plain icon buttons, instead of it
+                    // reading visibly taller than the rest of the row.
+                    HStack(spacing: 2) {
                         Button {
                             showSettings = true
                         } label: {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 16))
                                 .foregroundStyle(.white.opacity(0.55))
-                                .padding(16)
                         }
+                        .frame(width: 44, height: 44)
                         Button {
                             showMatchesPlayed = true
                         } label: {
                             Image(systemName: "trophy.fill")
                                 .font(.system(size: 16))
                                 .foregroundStyle(.white.opacity(0.55))
-                                .padding(16)
                         }
+                        .frame(width: 44, height: 44)
                         Spacer()
                         Button {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -73,27 +81,27 @@ struct LandscapeScoreView: View {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 16))
                                 .foregroundStyle(.white.opacity(store.canUndo ? 0.55 : 0.2))
-                                .padding(16)
                         }
+                        .frame(width: 44, height: 44)
                         .disabled(!store.canUndo)
                         HoldToResetButton {
                             store.resetForHoldGesture()
                         }
-                        .padding(16)
+                        .frame(width: 44, height: 44)
                         Button {
                             store.beginNewMatch(withCountdown: true)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.white.opacity(0.55))
-                                .padding(16)
                         }
+                        .frame(width: 44, height: 44)
                     }
-                    // On top of each button's own tap-target padding — this
-                    // is what actually keeps the outermost icons clear of
-                    // the physical screen edge (rounded corners, accidental
-                    // grip touches), since the whole overlay ignores the
-                    // safe area to let the score halves reach edge-to-edge.
+                    // On top of each button's own tap-target size — this is
+                    // what actually keeps the outermost icons clear of the
+                    // physical screen edge (rounded corners, accidental grip
+                    // touches), since the whole overlay ignores the safe
+                    // area to let the score halves reach edge-to-edge.
                     .padding(.horizontal, 14)
                     Spacer()
                     HistoryButton { showHistory = true }
