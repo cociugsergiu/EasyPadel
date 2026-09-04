@@ -78,19 +78,39 @@ struct MatchesPlayedView: View {
                     }
                     .frame(height: 14)
 
-                    HStack {
-                        ForEach(Array(checkpoints.enumerated()), id: \.offset) { i, milestone in
-                            if i > 0 { Spacer() }
-                            VStack(spacing: 2) {
-                                Text("\(milestone)")
-                                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                                    .foregroundStyle(revealedCheckpoints.contains(i) ? checkpointColors[i] : .white.opacity(0.4))
-                                Text(themeName(i))
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.35))
+                    // Positioned by the same fraction-of-width math as the
+                    // circles above (not an HStack + Spacers, which can only
+                    // spread items evenly across the full width — that put
+                    // "5 BRONZE" flush at the left edge instead of under its
+                    // circle at the 25% mark). The first/last labels anchor
+                    // by their leading/trailing edge rather than centering
+                    // exactly on 0%/100%, so their text doesn't overflow the
+                    // bar's own bounds.
+                    GeometryReader { geo in
+                        ZStack(alignment: .topLeading) {
+                            ForEach(Array(checkpoints.enumerated()), id: \.offset) { i, milestone in
+                                let labelWidth: CGFloat = 60
+                                let rawX = geo.size.width * (Double(milestone) / cap)
+                                let x: CGFloat = {
+                                    if i == 0 { return rawX + labelWidth / 2 }
+                                    if i == checkpoints.count - 1 { return rawX - labelWidth / 2 }
+                                    return rawX
+                                }()
+
+                                VStack(spacing: 2) {
+                                    Text("\(milestone)")
+                                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                                        .foregroundStyle(revealedCheckpoints.contains(i) ? checkpointColors[i] : .white.opacity(0.4))
+                                    Text(themeName(i))
+                                        .font(.system(size: 9, weight: .medium))
+                                        .foregroundStyle(.white.opacity(0.35))
+                                }
+                                .frame(width: labelWidth)
+                                .position(x: x, y: geo.size.height / 2)
                             }
                         }
                     }
+                    .frame(height: 28)
                 }
                 .padding(.horizontal, 8)
 

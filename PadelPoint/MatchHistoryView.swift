@@ -27,13 +27,11 @@ struct MatchHistoryView: View {
                             ForEach(store.matchHistory) { record in
                                 MatchHistoryRow(record: record, theme: store.currentTheme)
                                     .listRowBackground(Color.clear)
-                                    .contextMenu {
-                                        Button(role: .destructive) {
-                                            store.deleteHistoryRecord(record)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                    }
+                            }
+                            .onDelete { offsets in
+                                for index in offsets {
+                                    store.deleteHistoryRecord(store.matchHistory[index])
+                                }
                             }
                         }
                         .listStyle(.plain)
