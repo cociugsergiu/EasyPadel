@@ -1,0 +1,35 @@
+{
+  "identifier" : "6E1B9C2A-6C7E-4B7F-9A9E-2F6D6C1E9A11",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "F3A1D8B2-9E4C-4A3D-8B6F-1C5E7D2A9F44",
+      "localizations" : [
+        {
+          "description" : "Unlocks EasyPadel past the 5 free matches, on iPhone and Apple Watch.",
+          "displayName" : "Full Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.easypadel.app.fullaccess",
+      "referenceName" : "Full Access",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0",
+    "_developerTeamID" : "0",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

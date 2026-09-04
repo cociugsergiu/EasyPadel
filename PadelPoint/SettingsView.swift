@@ -64,6 +64,29 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    if store.purchases.isUnlocked {
+                        Label("Full Access unlocked", systemImage: "checkmark.seal.fill")
+                            .foregroundStyle(.primary)
+                    } else {
+                        HStack {
+                            Text("Free matches used")
+                            Spacer()
+                            Text("\(min(store.state.totalMatchesCompleted, MatchStore.freeMatchLimit))/\(MatchStore.freeMatchLimit)")
+                                .foregroundStyle(.secondary)
+                        }
+                        Button {
+                            Task { await store.purchases.restore() }
+                        } label: {
+                            Text("Restore Purchases")
+                        }
+                    }
+                } footer: {
+                    if !store.purchases.isUnlocked {
+                        Text("Already bought Full Access on another device? Restore Purchases picks it up here too — no need to pay twice.")
+                    }
+                }
+
+                Section {
                     Picker("Landscape Mode Score", selection: $infoStyleRaw) {
                         Text("Flash Overlay").tag(LandscapeInfoStyle.flash.rawValue)
                         Text("Score Badge").tag(LandscapeInfoStyle.badge.rawValue)

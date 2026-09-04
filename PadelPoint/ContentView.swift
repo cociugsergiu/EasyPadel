@@ -41,7 +41,7 @@ struct ContentView: View {
 
                 if let winner = state.winner {
                     WinnerOverlay(winner: winner, name: state.name(for: winner), theme: store.currentTheme) {
-                        store.resetMatch()
+                        store.beginNewMatch(withCountdown: false)
                     }
                 }
 
@@ -78,6 +78,10 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showMatchesPlayed) {
             MatchesPlayedView()
+                .environmentObject(store)
+        }
+        .sheet(isPresented: $store.showPaywall) {
+            PaywallView()
                 .environmentObject(store)
         }
     }
@@ -179,7 +183,7 @@ private struct CenterBar: View {
                 }
 
                 Button {
-                    store.startNewMatchCountdown()
+                    store.beginNewMatch(withCountdown: true)
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 15, weight: .semibold))

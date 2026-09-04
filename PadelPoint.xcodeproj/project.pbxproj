@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		00DD50E858430FDDA49575FC /* MatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD78CF6D24F4D554DBFC4B3 /* MatchStore.swift */; };
+		086E2A04206D8E59677D197B /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D025F81E3BB9B89848F70124 /* PaywallView.swift */; };
 		0B7C34F2638F02CB06377DFA /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C623E4C54EEBF117F96C573 /* Theme.swift */; };
 		0E56FBC61414365A0F529E72 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD8ECDEF1BCDC9D0BF53ED2 /* WatchContentView.swift */; };
 		1371726CBE9E6B87B157B0A6 /* MatchesPlayedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4674949F344A350089FC678A /* MatchesPlayedView.swift */; };
 		1EB2CBCFE330D6B7BD4AC9AF /* CountdownDigit.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16C259B2A687284A74C431E /* CountdownDigit.swift */; };
 		2F5570D4C8DAC86E9AE19136 /* MatchState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D136243400682F829C94B3 /* MatchState.swift */; };
 		2FD0D2B8417FC131762E88E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72DF81DD780E5331F27F2224 /* Assets.xcassets */; };
+		31A2F9B8D83E7FA60DD2E326 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36000E4406C48C8F279770DF /* PurchaseManager.swift */; };
 		37D6FF6896E23573D3E4A05C /* WatchMatchHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619D2BD62717F1086FCF570E /* WatchMatchHistoryView.swift */; };
 		398EA9BA4FE3C785E44CE3E0 /* PadelPointWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B53B4D20664D2349F0983EA /* PadelPointWatchApp.swift */; };
 		451347AEB2F5762C56A05BC2 /* BackgroundStylePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A84D83E5A406BED6307A9E /* BackgroundStylePicker.swift */; };
@@ -34,6 +36,8 @@
 		AA7732FAAE0BB5E57D35B8A2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176AF64FE4F7795B2C0E6C67 /* SettingsView.swift */; };
 		B2B1FA606B798457E48D1F10 /* LandscapeScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF883780CCB7545905BE0E42 /* LandscapeScoreView.swift */; };
 		BD2336297F3C2FFEBC0021B2 /* TeamZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30D7D966D8260C707336631 /* TeamZone.swift */; };
+		C1B514B73552A0E240F41654 /* WatchPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D6C02BCB3E247062C8ECD /* WatchPaywallView.swift */; };
+		D2B4B6910B5616216E1CDD79 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36000E4406C48C8F279770DF /* PurchaseManager.swift */; };
 		DDE7D6EE4075AC92600D2CBF /* MatchState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D136243400682F829C94B3 /* MatchState.swift */; };
 		E0AF6268A2AB42FC75A22C6A /* HoldToResetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8129DFC48DF2D6677F4311 /* HoldToResetButton.swift */; };
 		E2280F06E8228D1F01272E43 /* ConnectivitySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDB6AA73280526542259F91 /* ConnectivitySync.swift */; };
@@ -70,7 +74,9 @@
 		176AF64FE4F7795B2C0E6C67 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		23E74E1BB9429866F83602FD /* MatchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchHistoryView.swift; sourceTree = "<group>"; };
 		27D136243400682F829C94B3 /* MatchState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchState.swift; sourceTree = "<group>"; };
+		36000E4406C48C8F279770DF /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		3C623E4C54EEBF117F96C573 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		3E5D6C02BCB3E247062C8ECD /* WatchPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPaywallView.swift; sourceTree = "<group>"; };
 		4674949F344A350089FC678A /* MatchesPlayedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchesPlayedView.swift; sourceTree = "<group>"; };
 		4BD78CF6D24F4D554DBFC4B3 /* MatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchStore.swift; sourceTree = "<group>"; };
 		52A84D83E5A406BED6307A9E /* BackgroundStylePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStylePicker.swift; sourceTree = "<group>"; };
@@ -88,6 +94,7 @@
 		C2979B8A15F80973A5061C66 /* TeamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamTheme.swift; sourceTree = "<group>"; };
 		C3702A32E50540F827E2652B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CA8129DFC48DF2D6677F4311 /* HoldToResetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldToResetButton.swift; sourceTree = "<group>"; };
+		D025F81E3BB9B89848F70124 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		D16C259B2A687284A74C431E /* CountdownDigit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownDigit.swift; sourceTree = "<group>"; };
 		DCDB6AA73280526542259F91 /* ConnectivitySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivitySync.swift; sourceTree = "<group>"; };
 		E30D7D966D8260C707336631 /* TeamZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamZone.swift; sourceTree = "<group>"; };
@@ -104,6 +111,7 @@
 				10A2D8BDD8AB4F6E22026F12 /* MatchRecord.swift */,
 				27D136243400682F829C94B3 /* MatchState.swift */,
 				4BD78CF6D24F4D554DBFC4B3 /* MatchStore.swift */,
+				36000E4406C48C8F279770DF /* PurchaseManager.swift */,
 				C2979B8A15F80973A5061C66 /* TeamTheme.swift */,
 				3C623E4C54EEBF117F96C573 /* Theme.swift */,
 			);
@@ -131,6 +139,7 @@
 				4674949F344A350089FC678A /* MatchesPlayedView.swift */,
 				23E74E1BB9429866F83602FD /* MatchHistoryView.swift */,
 				872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */,
+				D025F81E3BB9B89848F70124 /* PaywallView.swift */,
 				176AF64FE4F7795B2C0E6C67 /* SettingsView.swift */,
 				E30D7D966D8260C707336631 /* TeamZone.swift */,
 			);
@@ -157,6 +166,7 @@
 				EDD8ECDEF1BCDC9D0BF53ED2 /* WatchContentView.swift */,
 				9B2C6DA6BB9604F6E9E3BB17 /* WatchMatchesPlayedView.swift */,
 				619D2BD62717F1086FCF570E /* WatchMatchHistoryView.swift */,
+				3E5D6C02BCB3E247062C8ECD /* WatchPaywallView.swift */,
 				8AD78C04ABB0D1E8577FC4D4 /* WorkoutManager.swift */,
 			);
 			path = "PadelPoint Watch App";
@@ -272,11 +282,13 @@
 				2F5570D4C8DAC86E9AE19136 /* MatchState.swift in Sources */,
 				00DD50E858430FDDA49575FC /* MatchStore.swift in Sources */,
 				398EA9BA4FE3C785E44CE3E0 /* PadelPointWatchApp.swift in Sources */,
+				D2B4B6910B5616216E1CDD79 /* PurchaseManager.swift in Sources */,
 				787FA950F9BC4F49658EE50B /* TeamTheme.swift in Sources */,
 				0B7C34F2638F02CB06377DFA /* Theme.swift in Sources */,
 				0E56FBC61414365A0F529E72 /* WatchContentView.swift in Sources */,
 				37D6FF6896E23573D3E4A05C /* WatchMatchHistoryView.swift in Sources */,
 				6368CAFC41F4C49D1AF57CA4 /* WatchMatchesPlayedView.swift in Sources */,
+				C1B514B73552A0E240F41654 /* WatchPaywallView.swift in Sources */,
 				815BBA32EEFE098C385ACF2B /* WorkoutManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -297,6 +309,8 @@
 				A1B644093D860683D6D4FDA9 /* MatchStore.swift in Sources */,
 				1371726CBE9E6B87B157B0A6 /* MatchesPlayedView.swift in Sources */,
 				4F8587854B47B84FD064115F /* PadelPointApp.swift in Sources */,
+				086E2A04206D8E59677D197B /* PaywallView.swift in Sources */,
+				31A2F9B8D83E7FA60DD2E326 /* PurchaseManager.swift in Sources */,
 				AA7732FAAE0BB5E57D35B8A2 /* SettingsView.swift in Sources */,
 				9E100B6BCCE8C753A18C92BA /* TeamTheme.swift in Sources */,
 				BD2336297F3C2FFEBC0021B2 /* TeamZone.swift in Sources */,

@@ -81,7 +81,7 @@ struct LandscapeScoreView: View {
                         }
                         .padding(16)
                         Button {
-                            store.startNewMatchCountdown()
+                            store.beginNewMatch(withCountdown: true)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .semibold))

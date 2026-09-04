@@ -5,10 +5,17 @@ import Combine
 /// the iPhone and Watch app targets. Each device keeps its own local copy so the
 /// Watch app keeps working even when it's out of range of the phone, and the two
 /// reconcile via ConnectivitySync whenever they're reachable.
+@MainActor
 final class MatchStore: ObservableObject {
+    /// How many matches can be played before Full Access is required.
+    static let freeMatchLimit = 5
+
     @Published private(set) var state: MatchState
     @Published private(set) var canUndo = false
     @Published private(set) var matchHistory: [MatchRecord] = []
+    @Published var showPaywall = false
+
+    let purchases = PurchaseManager()
 
     private let defaultsKey = "PadelPoint.matchState"
     private let historyDefaultsKey = "PadelPoint.matchHistory"
@@ -73,9 +80,32 @@ final class MatchStore: ObservableObject {
     /// winner, the hold gesture starts a whole new match instead.
     func resetForHoldGesture() {
         if state.winner != nil {
-            resetMatch()
+            beginNewMatch(withCountdown: false)
         } else {
             resetCurrentSet()
+        }
+    }
+
+    /// True once the free tier's match allowance is used up and Full Access
+    /// hasn't been purchased. Checked before any new match starts.
+    var hasReachedFreeLimit: Bool {
+        state.totalMatchesCompleted >= Self.freeMatchLimit && !purchases.isUnlocked
+    }
+
+    /// The single entry point for starting a new match — every "New Match" /
+    /// hold-to-reset-after-a-win action funnels through here so the free
+    /// limit can't be bypassed by hitting one call site but not another.
+    /// Presents the paywall instead of starting the match once the free
+    /// allowance is used up.
+    func beginNewMatch(withCountdown: Bool) {
+        guard !hasReachedFreeLimit else {
+            showPaywall = true
+            return
+        }
+        if withCountdown {
+            startNewMatchCountdown()
+        } else {
+            resetMatch()
         }
     }
 

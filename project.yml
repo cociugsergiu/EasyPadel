@@ -74,3 +74,24 @@ targets:
       properties:
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
+
+schemes:
+  PadelPoint:
+    build:
+      targets:
+        PadelPoint: all
+    run:
+      config: Debug
+      # Lets Full Access purchases be tested in Simulator against the local
+      # product definition below, with no App Store Connect setup needed
+      # until it's time to actually submit. Remove/replace once the real
+      # com.easypadel.app.fullaccess IAP exists in App Store Connect.
+      storeKitConfiguration: Configuration.storekit
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

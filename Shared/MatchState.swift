@@ -33,6 +33,12 @@ struct MatchState: Codable, Equatable {
     var simpleScoring = false
     var themeID = TeamTheme.classic.id
     var matchesPlayed = 0
+    /// Lifetime count of completed matches, used to gate the free-tier limit.
+    /// Unlike `matchesPlayed` (which drives cosmetic theme unlocks and can be
+    /// reset from Settings), this never resets — it exists specifically so
+    /// resetting the theme-unlock progress can't also reset free match
+    /// credit. See `MatchStore.hasReachedFreeLimit`.
+    var totalMatchesCompleted = 0
     var nameA = "Team A"
     var nameB = "Team B"
 
@@ -114,9 +120,9 @@ extension MatchState {
     /// "Start New Match" action in Settings) — never by the in-game hold
     /// gesture, which should only undo the current set.
     mutating func reset() {
-        let settings = (goldenPoint, setsToWin, simpleScoring, themeID, matchesPlayed, nameA, nameB)
+        let settings = (goldenPoint, setsToWin, simpleScoring, themeID, matchesPlayed, totalMatchesCompleted, nameA, nameB)
         self = .initial
-        (goldenPoint, setsToWin, simpleScoring, themeID, matchesPlayed, nameA, nameB) = settings
+        (goldenPoint, setsToWin, simpleScoring, themeID, matchesPlayed, totalMatchesCompleted, nameA, nameB) = settings
         updatedAt = Date()
     }
 
@@ -205,6 +211,7 @@ extension MatchState {
         if setsA == setsToWin || setsB == setsToWin {
             self.winner = setsA == setsToWin ? .a : .b
             matchesPlayed += 1
+            totalMatchesCompleted += 1
         }
     }
 }

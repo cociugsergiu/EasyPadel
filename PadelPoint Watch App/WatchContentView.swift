@@ -145,6 +145,9 @@ struct WatchContentView: View {
             .navigationDestination(isPresented: $showHistory) {
                 WatchMatchHistoryView()
             }
+            .sheet(isPresented: $store.showPaywall) {
+                WatchPaywallView()
+            }
         }
         .onAppear {
             store.refreshFromPairedDevice()
