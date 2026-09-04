@@ -14,6 +14,15 @@ final class MatchStore: ObservableObject {
     @Published private(set) var canUndo = false
     @Published private(set) var matchHistory: [MatchRecord] = []
     @Published var showPaywall = false
+    /// True for a brief window right after a launch where local storage had
+    /// nothing saved (a fresh install or reinstall) — `NSUbiquitousKeyValueStore
+    /// .synchronize()` is fire-and-forget, so there's no way to synchronously
+    /// know whether iCloud is about to deliver a match count that's actually
+    /// already at the free limit. Blocks starting a new match until either
+    /// the real cloud data arrives or a short timeout passes, so a reinstall
+    /// can't be used to sneak in an extra free match while iCloud is still
+    /// mid-fetch.
+    @Published private(set) var isVerifyingCloudStatus = false
 
     let purchases = PurchaseManager()
 
@@ -54,6 +63,10 @@ final class MatchStore: ObservableObject {
         // fresh install with nothing local yet but a populated cloud copy).
         persist()
 
+        if localState == nil {
+            isVerifyingCloudStatus = true
+        }
+
         let localHistory = UserDefaults.standard.data(forKey: historyDefaultsKey)
             .flatMap { try? JSONDecoder().decode([MatchRecord].self, from: $0) } ?? []
         let cloudHistory = cloudStore.data(forKey: historyDefaultsKey)
@@ -89,6 +102,16 @@ final class MatchStore: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in
                 self?.handleCloudStoreChange()
+            }
+        }
+
+        if isVerifyingCloudStatus {
+            // Bounded fallback in case iCloud never delivers a change
+            // notification at all (no account signed in, iCloud disabled
+            // for the app, genuinely nothing to restore) — don't leave a
+            // real new user stuck waiting on a fetch that isn't coming.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+                self?.isVerifyingCloudStatus = false
             }
         }
     }
@@ -141,6 +164,12 @@ final class MatchStore: ObservableObject {
     /// Presents the paywall instead of starting the match once the free
     /// allowance is used up.
     func beginNewMatch(withCountdown: Bool) {
+        // Still confirming there isn't a newer, possibly already-exhausted
+        // match count waiting in iCloud — see `isVerifyingCloudStatus`.
+        // Resolves within moments in practice, so simply not responding to
+        // the tap yet is preferable to a confusing false "New Match" or a
+        // paywall that might turn out to be wrong once the real count lands.
+        guard !isVerifyingCloudStatus else { return }
         guard !hasReachedFreeLimit else {
             showPaywall = true
             return
@@ -310,6 +339,7 @@ final class MatchStore: ObservableObject {
     /// sync — iCloud is just another source of "a copy of this state that
     /// might be newer than mine".
     private func handleCloudStoreChange() {
+        isVerifyingCloudStatus = false
         if let data = cloudStore.data(forKey: defaultsKey),
            let incoming = try? JSONDecoder().decode(MatchState.self, from: data) {
             merge(incoming)
