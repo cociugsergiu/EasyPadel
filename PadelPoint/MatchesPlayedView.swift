@@ -82,20 +82,14 @@ struct MatchesPlayedView: View {
                     // circles above (not an HStack + Spacers, which can only
                     // spread items evenly across the full width — that put
                     // "5 BRONZE" flush at the left edge instead of under its
-                    // circle at the 25% mark). The first/last labels anchor
-                    // by their leading/trailing edge rather than centering
-                    // exactly on 0%/100%, so their text doesn't overflow the
-                    // bar's own bounds.
+                    // circle at the 25% mark). Centered on the exact same x
+                    // as each circle, same as the circles themselves are —
+                    // there's enough padding around this section that the
+                    // first/last labels don't need special edge treatment.
                     GeometryReader { geo in
                         ZStack(alignment: .topLeading) {
                             ForEach(Array(checkpoints.enumerated()), id: \.offset) { i, milestone in
-                                let labelWidth: CGFloat = 60
-                                let rawX = geo.size.width * (Double(milestone) / cap)
-                                let x: CGFloat = {
-                                    if i == 0 { return rawX + labelWidth / 2 }
-                                    if i == checkpoints.count - 1 { return rawX - labelWidth / 2 }
-                                    return rawX
-                                }()
+                                let x = geo.size.width * (Double(milestone) / cap)
 
                                 VStack(spacing: 2) {
                                     Text("\(milestone)")
@@ -105,7 +99,7 @@ struct MatchesPlayedView: View {
                                         .font(.system(size: 9, weight: .medium))
                                         .foregroundStyle(.white.opacity(0.35))
                                 }
-                                .frame(width: labelWidth)
+                                .frame(width: 60)
                                 .position(x: x, y: geo.size.height / 2)
                             }
                         }
