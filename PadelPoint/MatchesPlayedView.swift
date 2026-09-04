@@ -14,6 +14,7 @@ struct MatchesPlayedView: View {
     @State private var animatedProgress: CGFloat = 0
     @State private var revealedCheckpoints: Set<Int> = []
     @State private var checkpointScale: [Int: CGFloat] = [:]
+    @State private var revealToken = UUID()
 
     private let checkpoints = [5, 10, 20]
     private let checkpointColors: [Color] = [
@@ -87,6 +88,8 @@ struct MatchesPlayedView: View {
                 }
                 .padding(.horizontal, 8)
 
+                Spacer(minLength: 0)
+
                 Button {
                     confirmingReset = true
                 } label: {
@@ -94,8 +97,7 @@ struct MatchesPlayedView: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.white.opacity(0.3))
                 }
-
-                Spacer(minLength: 0)
+                .padding(.bottom, 8)
             }
             .padding(.horizontal, 28)
             .padding(.top, 20)
@@ -129,6 +131,19 @@ struct MatchesPlayedView: View {
     /// from `fillDuration` using linear easing, so "time elapsed" maps
     /// directly to "fraction filled" — no guessing at an eased curve).
     private func animateReveal(played: Int, cap: Double, progress: Double) {
+        // SwiftUI can reuse this view's @State across dismiss/re-present
+        // rather than resetting it — without this, a second viewing could
+        // start from wherever the last animation left off (e.g. already at
+        // match 5's position), so the fill only visibly moves through the
+        // last few matches instead of the whole 0-to-current range. The
+        // token additionally guards against a stale scheduled pop from a
+        // previous, since-dismissed presentation firing into this one.
+        let token = UUID()
+        revealToken = token
+        animatedProgress = 0
+        revealedCheckpoints = []
+        checkpointScale = [:]
+
         guard progress > 0 else { return }
 
         guard !reduceMotion else {
@@ -144,6 +159,7 @@ struct MatchesPlayedView: View {
         for (i, milestone) in checkpoints.enumerated() where played >= milestone {
             let passTime = fillDuration * (Double(milestone) / cap) / progress
             DispatchQueue.main.asyncAfter(deadline: .now() + passTime) {
+                guard revealToken == token else { return }
                 popCheckpoint(i)
             }
         }
@@ -153,11 +169,13 @@ struct MatchesPlayedView: View {
     /// scheduled explicitly in two stages (rather than composed via
     /// `Animation.delay`) so the two stages can't visually overlap.
     private func popCheckpoint(_ i: Int) {
+        let token = revealToken
         withAnimation(.easeOut(duration: 0.12)) {
             revealedCheckpoints.insert(i)
             checkpointScale[i] = 1.5
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            guard revealToken == token else { return }
             withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
                 checkpointScale[i] = 1.0
             }
