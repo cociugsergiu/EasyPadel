@@ -98,11 +98,12 @@ struct LandscapeScoreView: View {
                         .frame(width: 44, height: 44)
                     }
                     // On top of each button's own tap-target size — this is
-                    // what actually keeps the outermost icons clear of the
-                    // physical screen edge (rounded corners, accidental grip
+                    // what actually keeps the icons clear of the physical
+                    // screen edge (rounded corners, accidental grip
                     // touches), since the whole overlay ignores the safe
                     // area to let the score halves reach edge-to-edge.
                     .padding(.horizontal, 14)
+                    .padding(.top, 10)
                     Spacer()
                     HistoryButton { showHistory = true }
                         .frame(maxWidth: .infinity)
@@ -187,25 +188,33 @@ struct LandscapeScoreView: View {
                     .engraved()
                     .contentTransition(.numericText())
 
-                Group {
-                    if state.isDeuce {
-                        Text("DEUCE")
-                            .font(.system(size: min(geo.size.height * 0.05, 20), weight: .semibold))
-                            .tracking(2)
-                            .foregroundStyle(.white.opacity(0.75))
-                    } else if state.servingTeam == team && !state.isTiebreak && state.winner == nil {
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(Theme.gold)
-                                .frame(width: 10, height: 10)
-                            if showLabels {
-                                Text("SERVING")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .tracking(2)
-                                    .foregroundStyle(Theme.gold.opacity(0.9))
-                            }
+                // Both possible views are always present (just opacity-
+                // toggled) rather than conditionally included/excluded —
+                // wrapping a conditional in Group and forcing a .frame
+                // height on it did NOT reliably give both teams' halves the
+                // same reserved height in practice (Team A, with a visible
+                // "SERVING" row, sat measurably higher than Team B's empty
+                // one). Rendering the exact same view structure on both
+                // sides removes any ambiguity about it.
+                ZStack {
+                    Text("DEUCE")
+                        .font(.system(size: min(geo.size.height * 0.05, 20), weight: .semibold))
+                        .tracking(2)
+                        .foregroundStyle(.white.opacity(0.75))
+                        .opacity(state.isDeuce ? 1 : 0)
+
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(Theme.gold)
+                            .frame(width: 10, height: 10)
+                        if showLabels {
+                            Text("SERVING")
+                                .font(.system(size: 13, weight: .semibold))
+                                .tracking(2)
+                                .foregroundStyle(Theme.gold.opacity(0.9))
                         }
                     }
+                    .opacity(!state.isDeuce && state.servingTeam == team && !state.isTiebreak && state.winner == nil ? 1 : 0)
                 }
                 .frame(height: min(geo.size.height * 0.06, 24))
             }
