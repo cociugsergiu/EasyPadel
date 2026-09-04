@@ -22,7 +22,13 @@ struct MatchesPlayedView: View {
         Color(red: 0.76, green: 0.79, blue: 0.82),
         Color(red: 0.85, green: 0.66, blue: 0.18)
     ]
-    private let fillDuration: Double = 1.1
+    private let fillDuration: Double = 2.4
+    // iOS's own sheet-presentation slide-up transition takes about this
+    // long — starting the reveal on .onAppear (which fires as soon as the
+    // view is inserted, right as that slide-up begins) meant the whole
+    // fill-and-pop sequence played out off-screen/mid-transition and had
+    // already finished by the time the sheet actually settled into view.
+    private let presentationSettleDelay: Double = 0.45
 
     var body: some View {
         let played = store.state.matchesPlayed
@@ -122,7 +128,20 @@ struct MatchesPlayedView: View {
         .presentationDragIndicator(.visible)
         .preferredColorScheme(.dark)
         .onAppear {
-            animateReveal(played: played, cap: cap, progress: progress)
+            // Reset immediately (so nothing flashes the previous
+            // presentation's end state while the sheet is sliding up), but
+            // don't START animating until that slide-up has actually
+            // settled — see `presentationSettleDelay`.
+            let token = UUID()
+            revealToken = token
+            animatedProgress = 0
+            revealedCheckpoints = []
+            checkpointScale = [:]
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + presentationSettleDelay) {
+                guard revealToken == token else { return }
+                animateReveal(played: played, cap: cap, progress: progress, token: token)
+            }
         }
     }
 
@@ -130,20 +149,7 @@ struct MatchesPlayedView: View {
     /// checkpoint dot at the moment the fill actually passes it (derived
     /// from `fillDuration` using linear easing, so "time elapsed" maps
     /// directly to "fraction filled" — no guessing at an eased curve).
-    private func animateReveal(played: Int, cap: Double, progress: Double) {
-        // SwiftUI can reuse this view's @State across dismiss/re-present
-        // rather than resetting it — without this, a second viewing could
-        // start from wherever the last animation left off (e.g. already at
-        // match 5's position), so the fill only visibly moves through the
-        // last few matches instead of the whole 0-to-current range. The
-        // token additionally guards against a stale scheduled pop from a
-        // previous, since-dismissed presentation firing into this one.
-        let token = UUID()
-        revealToken = token
-        animatedProgress = 0
-        revealedCheckpoints = []
-        checkpointScale = [:]
-
+    private func animateReveal(played: Int, cap: Double, progress: Double, token: UUID) {
         guard progress > 0 else { return }
 
         guard !reduceMotion else {
@@ -159,8 +165,11 @@ struct MatchesPlayedView: View {
         for (i, milestone) in checkpoints.enumerated() where played >= milestone {
             let passTime = fillDuration * (Double(milestone) / cap) / progress
             DispatchQueue.main.asyncAfter(deadline: .now() + passTime) {
+                // Guards against both a stale pop from a previous
+                // presentation, and this same presentation being dismissed
+                // mid-animation before the pop was due.
                 guard revealToken == token else { return }
-                popCheckpoint(i)
+                popCheckpoint(i, token: token)
             }
         }
     }
@@ -168,8 +177,7 @@ struct MatchesPlayedView: View {
     /// A quick snap past full size, then a springy settle back to it —
     /// scheduled explicitly in two stages (rather than composed via
     /// `Animation.delay`) so the two stages can't visually overlap.
-    private func popCheckpoint(_ i: Int) {
-        let token = revealToken
+    private func popCheckpoint(_ i: Int, token: UUID) {
         withAnimation(.easeOut(duration: 0.12)) {
             revealedCheckpoints.insert(i)
             checkpointScale[i] = 1.5
