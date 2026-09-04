@@ -8,14 +8,14 @@ import SwiftUI
 struct LandscapeScoreView: View {
     @EnvironmentObject private var store: MatchStore
     @AppStorage("showLabels") private var showLabels = true
-    @AppStorage("landscapeInfoStyle") private var infoStyleRaw = LandscapeInfoStyle.flash.rawValue
+    @AppStorage("landscapeInfoStyle") private var infoStyleRaw = LandscapeInfoStyle.badge.rawValue
     @Binding var showSettings: Bool
     @Binding var showMatchesPlayed: Bool
     @Binding var showHistory: Bool
     @State private var showInfo = false
 
     private var infoStyle: LandscapeInfoStyle {
-        LandscapeInfoStyle(rawValue: infoStyleRaw) ?? .flash
+        LandscapeInfoStyle(rawValue: infoStyleRaw) ?? .badge
     }
 
     var body: some View {
@@ -89,6 +89,12 @@ struct LandscapeScoreView: View {
                                 .padding(16)
                         }
                     }
+                    // On top of each button's own tap-target padding — this
+                    // is what actually keeps the outermost icons clear of
+                    // the physical screen edge (rounded corners, accidental
+                    // grip touches), since the whole overlay ignores the
+                    // safe area to let the score halves reach edge-to-edge.
+                    .padding(.horizontal, 14)
                     Spacer()
                     HistoryButton { showHistory = true }
                         .frame(maxWidth: .infinity)
@@ -162,6 +168,13 @@ struct LandscapeScoreView: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.4)
                     .lineLimit(1)
+                    // Fixed height regardless of how much minimumScaleFactor
+                    // shrinks a wider value (e.g. "40"/"AD" vs "0") to fit —
+                    // without this, the two halves' content stacks end up
+                    // different total heights and, since each VStack centers
+                    // independently, the name label above ends up sitting at
+                    // a different height on each side.
+                    .frame(height: geo.size.height * 0.62)
                     .foregroundStyle(.white)
                     .engraved()
                     .contentTransition(.numericText())

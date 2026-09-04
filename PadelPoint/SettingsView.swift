@@ -3,7 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var store: MatchStore
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("landscapeInfoStyle") private var infoStyleRaw = LandscapeInfoStyle.flash.rawValue
+    @AppStorage("landscapeInfoStyle") private var infoStyleRaw = LandscapeInfoStyle.badge.rawValue
     @Binding var showStylePicker: Bool
 
     var body: some View {
@@ -66,7 +66,7 @@ struct SettingsView: View {
                 Section {
                     if store.purchases.isUnlocked {
                         Label("Full Access unlocked", systemImage: "checkmark.seal.fill")
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Theme.success)
                     } else {
                         HStack {
                             Text("Free matches used")
@@ -77,7 +77,20 @@ struct SettingsView: View {
                         Button {
                             Task { await store.purchases.restore() }
                         } label: {
-                            Text("Restore Purchases")
+                            HStack {
+                                Text("Restore Purchases")
+                                if store.purchases.isRestoring {
+                                    Spacer()
+                                    ProgressView()
+                                }
+                            }
+                        }
+                        .disabled(store.purchases.isRestoring)
+
+                        if let message = store.purchases.errorMessage {
+                            Text(message)
+                                .font(.footnote)
+                                .foregroundStyle(Theme.teamA)
                         }
                     }
                 } footer: {

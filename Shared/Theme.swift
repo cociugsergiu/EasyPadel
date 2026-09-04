@@ -12,6 +12,7 @@ enum Theme {
     static let teamA = Color(red: 0.93, green: 0.44, blue: 0.35)   // warm coral
     static let teamB = Color(red: 0.11, green: 0.60, blue: 0.58)   // deep teal
     static let gold = Color(red: 0.83, green: 0.69, blue: 0.35)    // accent
+    static let success = Color(red: 0.38, green: 0.68, blue: 0.45) // unlocked / confirmation
     static let ink = Color.white
 
     static func teamColor(_ team: Team) -> Color {

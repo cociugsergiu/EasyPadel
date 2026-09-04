@@ -13,6 +13,7 @@ final class PurchaseManager: ObservableObject {
     @Published private(set) var isUnlocked = false
     @Published private(set) var product: Product?
     @Published var isPurchasing = false
+    @Published var isRestoring = false
     @Published var errorMessage: String?
 
     private var updatesTask: Task<Void, Never>?
@@ -52,6 +53,7 @@ final class PurchaseManager: ObservableObject {
     }
 
     func purchase() async {
+        errorMessage = nil
         guard let product else {
             errorMessage = "Full Access isn't available right now — check your connection and try again."
             return
@@ -74,10 +76,22 @@ final class PurchaseManager: ObservableObject {
     }
 
     func restore() async {
+        errorMessage = nil
+        isRestoring = true
+        defer { isRestoring = false }
         do {
             try await AppStore.sync()
             await refreshEntitlements()
+            if !isUnlocked {
+                errorMessage = "No previous purchase found for this Apple Account."
+            }
         } catch {
+            // AppStore.sync() talks to the real App Store, not the local
+            // StoreKit Testing config — if you're testing without a real
+            // com.easypadel.app.fullaccess product in App Store Connect yet,
+            // this is expected to fail unless the app was launched from
+            // Xcode's Run button (not a standalone reinstall), which is what
+            // attaches Configuration.storekit for the session.
             errorMessage = error.localizedDescription
         }
     }
