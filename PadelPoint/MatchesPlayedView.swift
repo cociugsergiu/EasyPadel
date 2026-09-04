@@ -6,7 +6,14 @@ import SwiftUI
 struct MatchesPlayedView: View {
     @EnvironmentObject private var store: MatchStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var confirmingReset = false
+
+    // Drives the "fill up, then pop each checkpoint it passes" reveal that
+    // plays once each time this sheet appears — see `animateReveal`.
+    @State private var animatedProgress: CGFloat = 0
+    @State private var revealedCheckpoints: Set<Int> = []
+    @State private var checkpointScale: [Int: CGFloat] = [:]
 
     private let checkpoints = [5, 10, 20]
     private let checkpointColors: [Color] = [
@@ -14,6 +21,7 @@ struct MatchesPlayedView: View {
         Color(red: 0.76, green: 0.79, blue: 0.82),
         Color(red: 0.85, green: 0.66, blue: 0.18)
     ]
+    private let fillDuration: Double = 1.1
 
     var body: some View {
         let played = store.state.matchesPlayed
@@ -21,16 +29,15 @@ struct MatchesPlayedView: View {
         let progress = min(Double(played) / cap, 1)
 
         NavigationStack {
-            VStack(spacing: 36) {
-                Spacer()
-
+            VStack(spacing: 28) {
                 VStack(spacing: 4) {
                     Text("\(played)")
-                        .font(.system(size: 72, weight: .heavy, design: .rounded))
+                        .font(.system(size: 60, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
                     Text(played == 1 ? "MATCH PLAYED" : "MATCHES PLAYED")
                         .silverLabel(size: 12, tracking: 3)
                 }
+                .padding(.top, 4)
 
                 VStack(spacing: 14) {
                     GeometryReader { geo in
@@ -46,15 +53,19 @@ struct MatchesPlayedView: View {
                                         startPoint: .leading, endPoint: .trailing
                                     )
                                 )
-                                .frame(width: geo.size.width * progress, height: 8)
+                                .frame(width: geo.size.width * animatedProgress, height: 8)
 
                             ForEach(Array(checkpoints.enumerated()), id: \.offset) { i, milestone in
                                 let x = geo.size.width * (Double(milestone) / cap)
                                 Circle()
-                                    .fill(played >= milestone ? checkpointColors[i] : Color.white.opacity(0.25))
+                                    .fill(revealedCheckpoints.contains(i) ? checkpointColors[i] : Color.white.opacity(0.25))
                                     .frame(width: 14, height: 14)
                                     .overlay(Circle().stroke(Theme.background, lineWidth: 2))
-                                    .position(x: x, y: 4)
+                                    .scaleEffect(checkpointScale[i] ?? 1)
+                                    // Centered on the bar's own centerline
+                                    // (geo.size.height/2), not a hardcoded
+                                    // value that assumed a taller container.
+                                    .position(x: x, y: geo.size.height / 2)
                             }
                         }
                     }
@@ -66,7 +77,7 @@ struct MatchesPlayedView: View {
                             VStack(spacing: 2) {
                                 Text("\(milestone)")
                                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                                    .foregroundStyle(played >= milestone ? checkpointColors[i] : .white.opacity(0.4))
+                                    .foregroundStyle(revealedCheckpoints.contains(i) ? checkpointColors[i] : .white.opacity(0.4))
                                 Text(themeName(i))
                                     .font(.system(size: 9, weight: .medium))
                                     .foregroundStyle(.white.opacity(0.35))
@@ -76,8 +87,6 @@ struct MatchesPlayedView: View {
                 }
                 .padding(.horizontal, 8)
 
-                Spacer()
-
                 Button {
                     confirmingReset = true
                 } label: {
@@ -85,10 +94,11 @@ struct MatchesPlayedView: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.white.opacity(0.3))
                 }
-                .padding(.bottom, 8)
+
+                Spacer(minLength: 0)
             }
             .padding(.horizontal, 28)
-            .padding(.top, 24)
+            .padding(.top, 20)
             .background(Theme.background.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -106,7 +116,52 @@ struct MatchesPlayedView: View {
                 Button("Cancel", role: .cancel) {}
             }
         }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         .preferredColorScheme(.dark)
+        .onAppear {
+            animateReveal(played: played, cap: cap, progress: progress)
+        }
+    }
+
+    /// Fills the bar from empty up to the real progress, popping each
+    /// checkpoint dot at the moment the fill actually passes it (derived
+    /// from `fillDuration` using linear easing, so "time elapsed" maps
+    /// directly to "fraction filled" — no guessing at an eased curve).
+    private func animateReveal(played: Int, cap: Double, progress: Double) {
+        guard progress > 0 else { return }
+
+        guard !reduceMotion else {
+            animatedProgress = CGFloat(progress)
+            revealedCheckpoints = Set(checkpoints.indices.filter { played >= checkpoints[$0] })
+            return
+        }
+
+        withAnimation(.linear(duration: fillDuration)) {
+            animatedProgress = CGFloat(progress)
+        }
+
+        for (i, milestone) in checkpoints.enumerated() where played >= milestone {
+            let passTime = fillDuration * (Double(milestone) / cap) / progress
+            DispatchQueue.main.asyncAfter(deadline: .now() + passTime) {
+                popCheckpoint(i)
+            }
+        }
+    }
+
+    /// A quick snap past full size, then a springy settle back to it —
+    /// scheduled explicitly in two stages (rather than composed via
+    /// `Animation.delay`) so the two stages can't visually overlap.
+    private func popCheckpoint(_ i: Int) {
+        withAnimation(.easeOut(duration: 0.12)) {
+            revealedCheckpoints.insert(i)
+            checkpointScale[i] = 1.5
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                checkpointScale[i] = 1.0
+            }
+        }
     }
 
     private func themeName(_ index: Int) -> String {
