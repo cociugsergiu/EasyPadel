@@ -22,7 +22,7 @@ struct MatchesPlayedView: View {
         Color(red: 0.76, green: 0.79, blue: 0.82),
         Color(red: 0.85, green: 0.66, blue: 0.18)
     ]
-    private let fillDuration: Double = 2.4
+    private let fillDuration: Double = 1.2
     // iOS's own sheet-presentation slide-up transition takes about this
     // long — starting the reveal on .onAppear (which fires as soon as the
     // view is inserted, right as that slide-up begins) meant the whole
