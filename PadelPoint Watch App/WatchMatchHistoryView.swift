@@ -4,6 +4,7 @@ import SwiftUI
 /// first, styled to match the rest of the app.
 struct WatchMatchHistoryView: View {
     @EnvironmentObject private var store: MatchStore
+    @State private var confirmingClearAll = false
 
     var body: some View {
         Group {
@@ -21,12 +22,38 @@ struct WatchMatchHistoryView: View {
                 List {
                     ForEach(store.matchHistory) { record in
                         WatchMatchHistoryRow(record: record, theme: store.currentTheme)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    store.deleteHistoryRecord(record)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
+
+                    Button(role: .destructive) {
+                        confirmingClearAll = true
+                    } label: {
+                        Text("Clear All Matches")
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.teamA.opacity(0.85))
                 }
                 .listStyle(.plain)
             }
         }
         .navigationTitle("History")
+        .confirmationDialog(
+            "Clear all match history? This also resets trophy progress.",
+            isPresented: $confirmingClearAll,
+            titleVisibility: .visible
+        ) {
+            Button("Clear All", role: .destructive) {
+                store.clearAllHistory()
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 }
 

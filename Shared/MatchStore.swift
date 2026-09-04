@@ -28,6 +28,7 @@ final class MatchStore: ObservableObject {
 
     private let defaultsKey = "PadelPoint.matchState"
     private let historyDefaultsKey = "PadelPoint.matchHistory"
+    private let deletedHistoryDefaultsKey = "PadelPoint.deletedHistoryIDs"
     private let connectivity = ConnectivitySync()
     // Backs up match state/history/settings to the player's iCloud account
     // (free — no CloudKit container, just the Key-Value Storage entitlement)
@@ -41,6 +42,13 @@ final class MatchStore: ObservableObject {
     private let maxHistory = 20
     private let maxHistoryRecords = 50
     private var cancellables = Set<AnyCancellable>()
+    /// Tombstones for records the user explicitly deleted — without this,
+    /// a delete would only remove the record from *this* device's list;
+    /// the next time the paired device (or iCloud, from a stale copy)
+    /// pushed its own not-yet-deleted copy of that record, `mergeHistory`'s
+    /// union-by-id logic would silently resurrect it. Checked by
+    /// `mergeHistory` and synced the same way as history itself.
+    private var deletedRecordIDs: Set<UUID> = []
 
     init() {
         cloudStore.synchronize()
@@ -67,11 +75,18 @@ final class MatchStore: ObservableObject {
             isVerifyingCloudStatus = true
         }
 
+        let localDeletedIDs = UserDefaults.standard.data(forKey: deletedHistoryDefaultsKey)
+            .flatMap { try? JSONDecoder().decode(Set<UUID>.self, from: $0) } ?? []
+        let cloudDeletedIDs = cloudStore.data(forKey: deletedHistoryDefaultsKey)
+            .flatMap { try? JSONDecoder().decode(Set<UUID>.self, from: $0) } ?? []
+        deletedRecordIDs = localDeletedIDs.union(cloudDeletedIDs)
+
         let localHistory = UserDefaults.standard.data(forKey: historyDefaultsKey)
             .flatMap { try? JSONDecoder().decode([MatchRecord].self, from: $0) } ?? []
         let cloudHistory = cloudStore.data(forKey: historyDefaultsKey)
             .flatMap { try? JSONDecoder().decode([MatchRecord].self, from: $0) } ?? []
         mergeHistory(localHistory + cloudHistory)
+        persistDeletedIDs()
 
         connectivity.onReceive = { [weak self] incoming in
             DispatchQueue.main.async {
@@ -81,6 +96,11 @@ final class MatchStore: ObservableObject {
         connectivity.onReceiveHistory = { [weak self] record in
             DispatchQueue.main.async {
                 self?.addHistoryRecord(record, broadcast: false)
+            }
+        }
+        connectivity.onReceiveHistoryDeletion = { [weak self] id in
+            DispatchQueue.main.async {
+                self?.applyHistoryDeletion(id, broadcast: false)
             }
         }
         connectivity.activate()
@@ -223,6 +243,28 @@ final class MatchStore: ObservableObject {
         apply(new)
     }
 
+    /// Removes a single completed match from history. Deliberately touches
+    /// nothing else — not `matchesPlayed` (the trophy/theme-unlock counter)
+    /// and not `totalMatchesCompleted` (the free-match paywall counter,
+    /// which must never move for any reason other than actually playing a
+    /// match or buying Full Access).
+    func deleteHistoryRecord(_ record: MatchRecord) {
+        applyHistoryDeletion(record.id, broadcast: true)
+    }
+
+    /// Clears the whole history list and, along with it, resets the trophy
+    /// progress (`matchesPlayed`/theme unlocks) — "start fresh" naturally
+    /// implies both together. Still never touches `totalMatchesCompleted`;
+    /// see `deleteHistoryRecord`. The trophies screen's own "Reset
+    /// Progress" is the inverse case — it resets trophy progress without
+    /// touching history at all, and stays that way.
+    func clearAllHistory() {
+        for record in matchHistory {
+            applyHistoryDeletion(record.id, broadcast: true)
+        }
+        resetMatchesPlayed()
+    }
+
     /// Starts a synced "new match starting in 3…2…1" countdown. Every
     /// device shows the same countdown almost instantly, since it's driven
     /// by this shared deadline rather than a per-device timer.
@@ -301,12 +343,33 @@ final class MatchStore: ObservableObject {
     }
 
     private func addHistoryRecord(_ record: MatchRecord, broadcast: Bool) {
+        guard !deletedRecordIDs.contains(record.id) else { return }
         guard !matchHistory.contains(where: { $0.id == record.id }) else { return }
         matchHistory.insert(record, at: 0)
         if matchHistory.count > maxHistoryRecords { matchHistory.removeLast() }
         persistHistory()
         if broadcast {
             connectivity.sendHistory(record)
+        }
+    }
+
+    /// Applies one deletion locally — used both for a delete this device
+    /// initiated (`broadcast: true`, also tells the paired device and
+    /// records a tombstone so iCloud/the paired device can't resurrect it)
+    /// and one that arrived from the paired device or iCloud
+    /// (`broadcast: false`, avoiding an echo back to whoever sent it).
+    private func applyHistoryDeletion(_ id: UUID, broadcast: Bool) {
+        let isNewTombstone = deletedRecordIDs.insert(id).inserted
+        let wasPresent = matchHistory.contains { $0.id == id }
+        if wasPresent {
+            matchHistory.removeAll { $0.id == id }
+            persistHistory()
+        }
+        if isNewTombstone {
+            persistDeletedIDs()
+        }
+        if broadcast {
+            connectivity.sendHistoryDeletion(id)
         }
     }
 
@@ -324,7 +387,7 @@ final class MatchStore: ObservableObject {
     private func mergeHistory(_ incoming: [MatchRecord]) {
         var byID = Dictionary(uniqueKeysWithValues: matchHistory.map { ($0.id, $0) })
         var changed = false
-        for record in incoming where byID[record.id] == nil {
+        for record in incoming where byID[record.id] == nil && !deletedRecordIDs.contains(record.id) {
             byID[record.id] = record
             changed = true
         }
@@ -344,6 +407,20 @@ final class MatchStore: ObservableObject {
            let incoming = try? JSONDecoder().decode(MatchState.self, from: data) {
             merge(incoming)
         }
+        // Deleted-ID tombstones before history, so a deletion that arrived
+        // from iCloud is already known by the time mergeHistory runs below
+        // (otherwise a record could get re-added here and only be removed
+        // again on the *next* cloud change).
+        if let data = cloudStore.data(forKey: deletedHistoryDefaultsKey),
+           let incoming = try? JSONDecoder().decode(Set<UUID>.self, from: data) {
+            let newIDs = incoming.subtracting(deletedRecordIDs)
+            if !newIDs.isEmpty {
+                deletedRecordIDs.formUnion(newIDs)
+                matchHistory.removeAll { newIDs.contains($0.id) }
+                persistHistory()
+                persistDeletedIDs()
+            }
+        }
         if let data = cloudStore.data(forKey: historyDefaultsKey),
            let incoming = try? JSONDecoder().decode([MatchRecord].self, from: data) {
             mergeHistory(incoming)
@@ -360,5 +437,11 @@ final class MatchStore: ObservableObject {
         guard let data = try? JSONEncoder().encode(matchHistory) else { return }
         UserDefaults.standard.set(data, forKey: historyDefaultsKey)
         cloudStore.set(data, forKey: historyDefaultsKey)
+    }
+
+    private func persistDeletedIDs() {
+        guard let data = try? JSONEncoder().encode(deletedRecordIDs) else { return }
+        UserDefaults.standard.set(data, forKey: deletedHistoryDefaultsKey)
+        cloudStore.set(data, forKey: deletedHistoryDefaultsKey)
     }
 }

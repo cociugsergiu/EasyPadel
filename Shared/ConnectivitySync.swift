@@ -7,6 +7,7 @@ import WatchConnectivity
 final class ConnectivitySync: NSObject, WCSessionDelegate {
     var onReceive: ((MatchState) -> Void)?
     var onReceiveHistory: ((MatchRecord) -> Void)?
+    var onReceiveHistoryDeletion: ((UUID) -> Void)?
 
     private var session: WCSession? {
         WCSession.isSupported() ? .default : nil
@@ -54,10 +55,24 @@ final class ConnectivitySync: NSObject, WCSessionDelegate {
         session.transferUserInfo(["historyRecord": data])
     }
 
+    /// Sends one deleted match's id, the same queued-delta way as a new
+    /// history record — each deletion is its own event, and this reliably
+    /// delivers every one (even while the paired device is unreachable)
+    /// instead of only ever reflecting the latest.
+    func sendHistoryDeletion(_ id: UUID) {
+        guard let session, session.activationState == .activated else { return }
+        session.transferUserInfo(["deletedHistoryID": id.uuidString])
+    }
+
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
-        guard let data = userInfo["historyRecord"] as? Data,
-              let record = try? JSONDecoder().decode(MatchRecord.self, from: data) else { return }
-        onReceiveHistory?(record)
+        if let data = userInfo["historyRecord"] as? Data,
+           let record = try? JSONDecoder().decode(MatchRecord.self, from: data) {
+            onReceiveHistory?(record)
+        }
+        if let idString = userInfo["deletedHistoryID"] as? String,
+           let id = UUID(uuidString: idString) {
+            onReceiveHistoryDeletion?(id)
+        }
     }
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {

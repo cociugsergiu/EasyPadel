@@ -6,6 +6,7 @@ import SwiftUI
 struct MatchHistoryView: View {
     @EnvironmentObject private var store: MatchStore
     @Environment(\.dismiss) private var dismiss
+    @State private var confirmingClearAll = false
 
     var body: some View {
         NavigationStack {
@@ -21,14 +22,32 @@ struct MatchHistoryView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List {
-                        ForEach(store.matchHistory) { record in
-                            MatchHistoryRow(record: record, theme: store.currentTheme)
-                                .listRowBackground(Color.clear)
+                    VStack(spacing: 0) {
+                        List {
+                            ForEach(store.matchHistory) { record in
+                                MatchHistoryRow(record: record, theme: store.currentTheme)
+                                    .listRowBackground(Color.clear)
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            store.deleteHistoryRecord(record)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                            }
                         }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+
+                        Button(role: .destructive) {
+                            confirmingClearAll = true
+                        } label: {
+                            Text("Clear All Matches")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(Theme.teamA.opacity(0.85))
+                        }
+                        .padding(.vertical, 14)
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
                 }
             }
             .background(Theme.background.ignoresSafeArea())
@@ -38,6 +57,16 @@ struct MatchHistoryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .confirmationDialog(
+                "Clear all match history? This also resets your trophy progress — it won't affect your free-match count.",
+                isPresented: $confirmingClearAll,
+                titleVisibility: .visible
+            ) {
+                Button("Clear All", role: .destructive) {
+                    store.clearAllHistory()
+                }
+                Button("Cancel", role: .cancel) {}
             }
         }
         .preferredColorScheme(.dark)
