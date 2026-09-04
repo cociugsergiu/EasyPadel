@@ -20,23 +20,45 @@ final class MatchStore: ObservableObject {
     private let defaultsKey = "PadelPoint.matchState"
     private let historyDefaultsKey = "PadelPoint.matchHistory"
     private let connectivity = ConnectivitySync()
+    // Backs up match state/history/settings to the player's iCloud account
+    // (free — no CloudKit container, just the Key-Value Storage entitlement)
+    // so a deleted-and-reinstalled app, or a fresh device signed into the
+    // same Apple ID, comes back with history and preferences intact instead
+    // of empty. UserDefaults stays the fast local read; this is the durable
+    // backup, reconciled with the exact same "newest `updatedAt` wins" rule
+    // already used for the iPhone↔Watch sync below.
+    private let cloudStore = NSUbiquitousKeyValueStore.default
     private var history: [MatchState] = []
     private let maxHistory = 20
     private let maxHistoryRecords = 50
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: defaultsKey),
-           let saved = try? JSONDecoder().decode(MatchState.self, from: data) {
-            state = saved
-        } else {
+        cloudStore.synchronize()
+
+        let localState = UserDefaults.standard.data(forKey: defaultsKey)
+            .flatMap { try? JSONDecoder().decode(MatchState.self, from: $0) }
+        let cloudState = cloudStore.data(forKey: defaultsKey)
+            .flatMap { try? JSONDecoder().decode(MatchState.self, from: $0) }
+        switch (localState, cloudState) {
+        case let (local?, cloud?):
+            state = cloud.updatedAt > local.updatedAt ? cloud : local
+        case let (local?, nil):
+            state = local
+        case let (nil, cloud?):
+            state = cloud
+        case (nil, nil):
             state = .initial
         }
+        // Back-fills whichever store lost the comparison above (e.g. a
+        // fresh install with nothing local yet but a populated cloud copy).
+        persist()
 
-        if let data = UserDefaults.standard.data(forKey: historyDefaultsKey),
-           let saved = try? JSONDecoder().decode([MatchRecord].self, from: data) {
-            matchHistory = saved
-        }
+        let localHistory = UserDefaults.standard.data(forKey: historyDefaultsKey)
+            .flatMap { try? JSONDecoder().decode([MatchRecord].self, from: $0) } ?? []
+        let cloudHistory = cloudStore.data(forKey: historyDefaultsKey)
+            .flatMap { try? JSONDecoder().decode([MatchRecord].self, from: $0) } ?? []
+        mergeHistory(localHistory + cloudHistory)
 
         connectivity.onReceive = { [weak self] incoming in
             DispatchQueue.main.async {
@@ -59,6 +81,16 @@ final class MatchStore: ObservableObject {
         purchases.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+
+        NotificationCenter.default.addObserver(
+            forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: cloudStore,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.handleCloudStoreChange()
+            }
+        }
     }
 
     func addPoint(for team: Team) {
@@ -255,13 +287,48 @@ final class MatchStore: ObservableObject {
         persist()
     }
 
+    /// Unions any not-yet-seen records (by id) into `matchHistory`, then
+    /// re-sorts newest-first and re-caps — used both for the initial
+    /// local+cloud load and for records that arrive later from iCloud.
+    /// Unlike `addHistoryRecord`, this takes a whole batch at once, so it
+    /// sorts explicitly by date rather than relying on insertion order.
+    private func mergeHistory(_ incoming: [MatchRecord]) {
+        var byID = Dictionary(uniqueKeysWithValues: matchHistory.map { ($0.id, $0) })
+        var changed = false
+        for record in incoming where byID[record.id] == nil {
+            byID[record.id] = record
+            changed = true
+        }
+        guard changed else { return }
+        matchHistory = byID.values.sorted { $0.date > $1.date }.prefix(maxHistoryRecords).map { $0 }
+        persistHistory()
+    }
+
+    /// Called when another device signed into the same iCloud account (or
+    /// this same device after a delete-and-reinstall) pushes a newer
+    /// snapshot. Reuses the exact same reconciliation as the iPhone↔Watch
+    /// sync — iCloud is just another source of "a copy of this state that
+    /// might be newer than mine".
+    private func handleCloudStoreChange() {
+        if let data = cloudStore.data(forKey: defaultsKey),
+           let incoming = try? JSONDecoder().decode(MatchState.self, from: data) {
+            merge(incoming)
+        }
+        if let data = cloudStore.data(forKey: historyDefaultsKey),
+           let incoming = try? JSONDecoder().decode([MatchRecord].self, from: data) {
+            mergeHistory(incoming)
+        }
+    }
+
     private func persist() {
         guard let data = try? JSONEncoder().encode(state) else { return }
         UserDefaults.standard.set(data, forKey: defaultsKey)
+        cloudStore.set(data, forKey: defaultsKey)
     }
 
     private func persistHistory() {
         guard let data = try? JSONEncoder().encode(matchHistory) else { return }
         UserDefaults.standard.set(data, forKey: historyDefaultsKey)
+        cloudStore.set(data, forKey: historyDefaultsKey)
     }
 }

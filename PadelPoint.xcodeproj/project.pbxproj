@@ -85,6 +85,7 @@
 		7AA0AE1A5B3D3E5AC8FE0C4F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadelPointApp.swift; sourceTree = "<group>"; };
 		8AD78C04ABB0D1E8577FC4D4 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
+		8E2315C69494E6E093ED1E35 /* PadelPoint.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PadelPoint.entitlements; sourceTree = "<group>"; };
 		92CBEE36AAC36FCA5EB581E6 /* PadelPoint Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PadelPoint Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B2C6DA6BB9604F6E9E3BB17 /* WatchMatchesPlayedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchMatchesPlayedView.swift; sourceTree = "<group>"; };
 		9B53B4D20664D2349F0983EA /* PadelPointWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadelPointWatchApp.swift; sourceTree = "<group>"; };
@@ -138,6 +139,7 @@
 				FF883780CCB7545905BE0E42 /* LandscapeScoreView.swift */,
 				4674949F344A350089FC678A /* MatchesPlayedView.swift */,
 				23E74E1BB9429866F83602FD /* MatchHistoryView.swift */,
+				8E2315C69494E6E093ED1E35 /* PadelPoint.entitlements */,
 				872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */,
 				D025F81E3BB9B89848F70124 /* PaywallView.swift */,
 				176AF64FE4F7795B2C0E6C67 /* SettingsView.swift */,
@@ -474,6 +476,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -504,6 +507,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
