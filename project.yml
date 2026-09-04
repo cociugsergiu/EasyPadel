@@ -43,6 +43,21 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         TARGETED_DEVICE_FAMILY: "1,2"
+      # XcodeGen's own default otherwise injects the legacy, invalid
+      # "iPhone Developer" identity here for both configs, which conflicts
+      # with Automatic signing (CODE_SIGN_STYLE below) — archives built with
+      # it came out completely unsigned ("code object is not signed at
+      # all"), which is a real, confirmed bug regardless of anything else.
+      # Automatic signing only accepts "Apple Development" as an explicit
+      # value here, for both Debug AND Release/Archive — Xcode's own error
+      # is explicit about this ("conflicting provisioning settings"
+      # otherwise). The actual Apple Distribution re-signing for the App
+      # Store happens later, at export time, not during this archive step.
+      configs:
+        Debug:
+          CODE_SIGN_IDENTITY: "Apple Development"
+        Release:
+          CODE_SIGN_IDENTITY: "Apple Development"
     entitlements:
       path: PadelPoint/PadelPoint.entitlements
       properties:
