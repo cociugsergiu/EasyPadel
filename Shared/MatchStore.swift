@@ -23,6 +23,7 @@ final class MatchStore: ObservableObject {
     private var history: [MatchState] = []
     private let maxHistory = 20
     private let maxHistoryRecords = 50
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         if let data = UserDefaults.standard.data(forKey: defaultsKey),
@@ -48,6 +49,16 @@ final class MatchStore: ObservableObject {
             }
         }
         connectivity.activate()
+
+        // PurchaseManager is its own ObservableObject nested inside this
+        // one — SwiftUI views observe `store`, not `store.purchases`
+        // directly, and a nested ObservableObject's changes don't
+        // propagate on their own. Without this forward, tapping Buy would
+        // update `purchases.isPurchasing`/`errorMessage`/`isUnlocked`
+        // internally but no view would ever redraw to show it.
+        purchases.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     func addPoint(for team: Team) {
