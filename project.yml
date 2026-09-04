@@ -104,3 +104,24 @@ schemes:
       config: Debug
     archive:
       config: Release
+
+  PadelPoint Watch App:
+    build:
+      targets:
+        PadelPoint Watch App: all
+    run:
+      config: Debug
+      # The Watch app runs as its own separate process even when launched
+      # alongside the iPhone app, with its own independent StoreKit Testing
+      # context — without this, the Watch was hitting the real (empty) App
+      # Store regardless of what the iPhone's own scheme was configured
+      # with, making purchases look unlocked on iPhone but not on Watch.
+      storeKitConfiguration: Configuration.storekit
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

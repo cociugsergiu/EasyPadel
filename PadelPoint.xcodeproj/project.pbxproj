@@ -91,7 +91,7 @@
 		9B53B4D20664D2349F0983EA /* PadelPointWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadelPointWatchApp.swift; sourceTree = "<group>"; };
 		B461DCCCF51BA6BA8C80D343 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B650443CAD13C6BA0F75C5A2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		BC9E491432E8CEE02D41FD59 /* PadelPoint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PadelPoint.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC9E491432E8CEE02D41FD59 /* PadelPoint.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PadelPoint.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2979B8A15F80973A5061C66 /* TeamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamTheme.swift; sourceTree = "<group>"; };
 		C3702A32E50540F827E2652B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CA8129DFC48DF2D6677F4311 /* HoldToResetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldToResetButton.swift; sourceTree = "<group>"; };
@@ -225,6 +225,10 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					A509F23213C8644DF55D4313 = {
+						DevelopmentTeam = 7EFDRY267K;
+						ProvisioningStyle = Automatic;
+					};
+					ECB1ED50192B13A53C8D5262 = {
 						DevelopmentTeam = 7EFDRY267K;
 						ProvisioningStyle = Automatic;
 					};
@@ -473,16 +477,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7EFDRY267K;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.easypadel.app;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -507,16 +508,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 7EFDRY267K;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.easypadel.app;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
