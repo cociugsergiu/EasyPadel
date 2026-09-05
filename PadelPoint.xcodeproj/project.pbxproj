@@ -479,6 +479,7 @@
 				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -510,6 +511,7 @@
 				CODE_SIGN_ENTITLEMENTS = PadelPoint/PadelPoint.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				INFOPLIST_FILE = PadelPoint/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
