@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("landscapeInfoStyle") private var infoStyleRaw = LandscapeInfoStyle.badge.rawValue
     @Binding var showStylePicker: Bool
+    @Binding var showSpectator: Bool
 
     var body: some View {
         NavigationStack {
@@ -61,6 +62,24 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                }
+
+                Section {
+                    Button {
+                        dismiss()
+                        showSpectator = true
+                    } label: {
+                        HStack {
+                            Text("Watch Together")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } footer: {
+                    Text("Let teammates or opponents nearby watch this match live on their own phone.")
                 }
 
                 Section {
@@ -121,5 +140,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(showStylePicker: .constant(false)).environmentObject(MatchStore())
+    SettingsView(showStylePicker: .constant(false), showSpectator: .constant(false)).environmentObject(MatchStore())
 }

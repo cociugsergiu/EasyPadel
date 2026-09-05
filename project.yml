@@ -37,6 +37,13 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
+        # For the Multipeer "watch this match live" feature — MultipeerConnectivity
+        # advertises/browses over Bonjour on the local network, which needs both
+        # of these since iOS 14 or the advertiser/browser silently finds nothing.
+        NSLocalNetworkUsageDescription: "EasyPadel uses your local network to let nearby players watch this match live on their own phones."
+        NSBonjourServices:
+          - "_easypadel-match._tcp"
+          - "_easypadel-match._udp"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.easypadel.app

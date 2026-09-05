@@ -83,11 +83,12 @@ struct LandscapeScoreView: View {
                                 .foregroundStyle(.white.opacity(store.canUndo ? 0.55 : 0.2))
                         }
                         .frame(width: 44, height: 44)
-                        .disabled(!store.canUndo)
+                        .disabled(!store.canUndo || store.multipeer.isViewing)
                         HoldToResetButton {
                             store.resetForHoldGesture()
                         }
                         .frame(width: 44, height: 44)
+                        .disabled(store.multipeer.isViewing)
                         Button {
                             store.beginNewMatch(withCountdown: true)
                         } label: {
@@ -96,7 +97,9 @@ struct LandscapeScoreView: View {
                                 .foregroundStyle(.white.opacity(0.55))
                         }
                         .frame(width: 44, height: 44)
+                        .disabled(store.multipeer.isViewing)
                     }
+                    .opacity(store.multipeer.isViewing ? 0.6 : 1)
                     // On top of each button's own tap-target size — this is
                     // what actually keeps the icons clear of the physical
                     // screen edge (rounded corners, accidental grip
@@ -222,7 +225,7 @@ struct LandscapeScoreView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture {
-            guard state.winner == nil else { return }
+            guard state.winner == nil, !store.multipeer.isViewing else { return }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             store.addPoint(for: team)
         }

@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var showMatchesPlayed = false
     @State private var showHistory = false
     @State private var showStylePicker = false
+    @State private var showSpectator = false
 
     var body: some View {
         let state = store.state
@@ -62,6 +63,13 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                         .ignoresSafeArea(edges: .bottom)
                 }
+
+                if store.multipeer.isViewing {
+                    SpectatingBanner {
+                        store.leaveSpectating()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
             }
         }
         .onAppear {
@@ -69,7 +77,7 @@ struct ContentView: View {
             UIApplication.shared.isIdleTimerDisabled = true
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(showStylePicker: $showStylePicker)
+            SettingsView(showStylePicker: $showStylePicker, showSpectator: $showSpectator)
                 .environmentObject(store)
         }
         .sheet(isPresented: $showHistory) {
@@ -84,6 +92,43 @@ struct ContentView: View {
             PaywallView()
                 .environmentObject(store)
         }
+        .sheet(isPresented: $showSpectator) {
+            SpectatorView()
+                .environmentObject(store)
+        }
+    }
+}
+
+/// Persistent strip while watching someone else's match — the whole score
+/// screen behind it is a live, read-only mirror, so this is the one control
+/// that stays active: leaving hands the screen back to whatever match (or
+/// lack of one) this device had going before it started watching.
+private struct SpectatingBanner: View {
+    let onLeave: () -> Void
+
+    var body: some View {
+        HStack {
+            Image(systemName: "dot.radiowaves.left.and.right")
+                .font(.system(size: 12, weight: .semibold))
+            Text("SPECTATING")
+                .font(.system(size: 12, weight: .semibold))
+                .tracking(1.5)
+            Spacer()
+            Button(action: onLeave) {
+                Text("Leave")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(Theme.gold, in: Capsule())
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 14)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
+        .background(.black.opacity(0.75))
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -191,6 +236,8 @@ private struct CenterBar: View {
                 }
                 .frame(width: 26, height: 34)
             }
+            .disabled(store.multipeer.isViewing)
+            .opacity(store.multipeer.isViewing ? 0.3 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 10)

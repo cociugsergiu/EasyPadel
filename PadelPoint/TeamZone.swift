@@ -71,7 +71,7 @@ struct TeamZone: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture {
-            guard state.winner == nil else { return }
+            guard state.winner == nil, !store.multipeer.isViewing else { return }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) {
                 store.addPoint(for: team)

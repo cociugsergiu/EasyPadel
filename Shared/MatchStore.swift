@@ -1,5 +1,8 @@
 import Foundation
 import Combine
+#if os(iOS)
+import MultipeerConnectivity
+#endif
 
 /// Single source of truth for the current match, shared (as source code) between
 /// the iPhone and Watch app targets. Each device keeps its own local copy so the
@@ -25,6 +28,19 @@ final class MatchStore: ObservableObject {
     @Published private(set) var isVerifyingCloudStatus = false
 
     let purchases = PurchaseManager()
+    #if os(iOS)
+    // MultipeerConnectivity isn't available on watchOS in this SDK, and the
+    // "watch a live match nearby" feature only makes sense on the iPhone
+    // anyway (bigger screen, the one you'd hand someone to watch) — the
+    // Watch app is untouched by this feature entirely.
+    let multipeer = MultipeerMatchSession()
+
+    /// Snapshot of this device's own match, taken right before joining
+    /// someone else's as a spectator, and restored the moment you leave —
+    /// so watching a teammate's match never overwrites or loses whatever
+    /// match you had going (or hadn't started) on your own device.
+    private var preSpectatorState: MatchState?
+    #endif
 
     private let defaultsKey = "PadelPoint.matchState"
     private let historyDefaultsKey = "PadelPoint.matchHistory"
@@ -114,6 +130,17 @@ final class MatchStore: ObservableObject {
         purchases.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
+
+        #if os(iOS)
+        // Same forwarding, same reason, for the spectator session.
+        multipeer.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
+
+        multipeer.onReceiveState = { [weak self] remote in
+            self?.applySpectatorState(remote)
+        }
+        #endif
 
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
@@ -287,6 +314,54 @@ final class MatchStore: ObservableObject {
         TeamTheme.theme(for: state.themeID)
     }
 
+    #if os(iOS)
+    // MARK: Spectators (watch this match live, nearby)
+
+    /// Starts advertising this match to nearby devices. Scoring stays fully
+    /// under this device's control — hosting only ever sends state out,
+    /// never accepts it back in.
+    func startHostingSpectators() {
+        multipeer.startHosting()
+        multipeer.broadcast(state)
+    }
+
+    func stopHostingSpectators() {
+        multipeer.stopHosting()
+    }
+
+    func startBrowsingForMatches() {
+        multipeer.startBrowsing()
+    }
+
+    func stopBrowsingForMatches() {
+        multipeer.stopBrowsing()
+    }
+
+    func joinMatch(_ peer: MCPeerID) {
+        preSpectatorState = state
+        multipeer.join(peer)
+    }
+
+    /// Leaves a match being watched (restoring whatever match this device
+    /// had of its own), or stops hosting one — whichever applies.
+    func leaveSpectating() {
+        multipeer.disconnect()
+        if let preSpectatorState {
+            state = preSpectatorState
+            self.preSpectatorState = nil
+        }
+    }
+
+    /// A live mirror of the host's state, applied for display only — never
+    /// persisted (so it can't clobber this device's own saved match) and
+    /// never pushed into the undo history (undo is about *this* device's
+    /// own mistakes, not the host's).
+    private func applySpectatorState(_ remote: MatchState) {
+        guard multipeer.isViewing else { return }
+        state = remote
+    }
+    #endif
+
     /// Re-checks the paired device's last known state immediately, rather
     /// than waiting for a live push. Call this whenever a view appears, so
     /// e.g. opening the Watch app after changing something on the iPhone
@@ -303,6 +378,9 @@ final class MatchStore: ObservableObject {
     /// device via WatchConnectivity is never pushed onto this history, so
     /// undo can't fight the other device's actions.
     func undo() {
+        #if os(iOS)
+        guard !multipeer.isViewing else { return }
+        #endif
         guard var previous = history.popLast() else { return }
         canUndo = !history.isEmpty
         // Stamp as "now" even though the content is older — merge() picks
@@ -316,6 +394,15 @@ final class MatchStore: ObservableObject {
     }
 
     private func apply(_ new: MatchState) {
+        #if os(iOS)
+        // While watching someone else's match, this device's own score
+        // stays completely inert — every mutating method funnels through
+        // here, so gating it in this one place is enough to make the whole
+        // app read-only for the duration, without needing to touch every
+        // button/gesture that could otherwise call into one of them.
+        guard !multipeer.isViewing else { return }
+        #endif
+
         // Only the device that actually scores the winning point takes this
         // branch (a state that arrives already-won via merge() below does
         // not), so exactly one device creates the record and broadcasts it
@@ -340,6 +427,9 @@ final class MatchStore: ObservableObject {
         state = new
         persist()
         connectivity.send(new)
+        #if os(iOS)
+        multipeer.broadcast(new)
+        #endif
     }
 
     private func addHistoryRecord(_ record: MatchRecord, broadcast: Bool) {

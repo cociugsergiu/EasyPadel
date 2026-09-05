@@ -13,6 +13,7 @@
 		0E56FBC61414365A0F529E72 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD8ECDEF1BCDC9D0BF53ED2 /* WatchContentView.swift */; };
 		1371726CBE9E6B87B157B0A6 /* MatchesPlayedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4674949F344A350089FC678A /* MatchesPlayedView.swift */; };
 		1EB2CBCFE330D6B7BD4AC9AF /* CountdownDigit.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16C259B2A687284A74C431E /* CountdownDigit.swift */; };
+		24AB1EEDF6005F01B061C938 /* MultipeerMatchSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623A9E20E4CABE60B4558B91 /* MultipeerMatchSession.swift */; };
 		2F5570D4C8DAC86E9AE19136 /* MatchState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D136243400682F829C94B3 /* MatchState.swift */; };
 		2FD0D2B8417FC131762E88E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72DF81DD780E5331F27F2224 /* Assets.xcassets */; };
 		31A2F9B8D83E7FA60DD2E326 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36000E4406C48C8F279770DF /* PurchaseManager.swift */; };
@@ -22,8 +23,10 @@
 		4776328A35300E75CB0C86E0 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C623E4C54EEBF117F96C573 /* Theme.swift */; };
 		4F8587854B47B84FD064115F /* PadelPointApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */; };
 		6368CAFC41F4C49D1AF57CA4 /* WatchMatchesPlayedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2C6DA6BB9604F6E9E3BB17 /* WatchMatchesPlayedView.swift */; };
+		66AAD9985B8F9C870AAEA99F /* SpectatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DAE52B00895550E8B2E077F /* SpectatorView.swift */; };
 		7823EF75D7BA12D33F26334F /* MatchRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A2D8BDD8AB4F6E22026F12 /* MatchRecord.swift */; };
 		787FA950F9BC4F49658EE50B /* TeamTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2979B8A15F80973A5061C66 /* TeamTheme.swift */; };
+		80EBA7D5E2EE2B79530F72CF /* MultipeerMatchSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623A9E20E4CABE60B4558B91 /* MultipeerMatchSession.swift */; };
 		815BBA32EEFE098C385ACF2B /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD78C04ABB0D1E8577FC4D4 /* WorkoutManager.swift */; };
 		8239FFAAEEEFADAEBC508030 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B650443CAD13C6BA0F75C5A2 /* ContentView.swift */; };
 		84DD7C64B778610327A642AA /* MatchHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E74E1BB9429866F83602FD /* MatchHistoryView.swift */; };
@@ -76,11 +79,13 @@
 		27D136243400682F829C94B3 /* MatchState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchState.swift; sourceTree = "<group>"; };
 		36000E4406C48C8F279770DF /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		3C623E4C54EEBF117F96C573 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		3DAE52B00895550E8B2E077F /* SpectatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectatorView.swift; sourceTree = "<group>"; };
 		3E5D6C02BCB3E247062C8ECD /* WatchPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPaywallView.swift; sourceTree = "<group>"; };
 		4674949F344A350089FC678A /* MatchesPlayedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchesPlayedView.swift; sourceTree = "<group>"; };
 		4BD78CF6D24F4D554DBFC4B3 /* MatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchStore.swift; sourceTree = "<group>"; };
 		52A84D83E5A406BED6307A9E /* BackgroundStylePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStylePicker.swift; sourceTree = "<group>"; };
 		619D2BD62717F1086FCF570E /* WatchMatchHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchMatchHistoryView.swift; sourceTree = "<group>"; };
+		623A9E20E4CABE60B4558B91 /* MultipeerMatchSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipeerMatchSession.swift; sourceTree = "<group>"; };
 		72DF81DD780E5331F27F2224 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7AA0AE1A5B3D3E5AC8FE0C4F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadelPointApp.swift; sourceTree = "<group>"; };
@@ -112,6 +117,7 @@
 				10A2D8BDD8AB4F6E22026F12 /* MatchRecord.swift */,
 				27D136243400682F829C94B3 /* MatchState.swift */,
 				4BD78CF6D24F4D554DBFC4B3 /* MatchStore.swift */,
+				623A9E20E4CABE60B4558B91 /* MultipeerMatchSession.swift */,
 				36000E4406C48C8F279770DF /* PurchaseManager.swift */,
 				C2979B8A15F80973A5061C66 /* TeamTheme.swift */,
 				3C623E4C54EEBF117F96C573 /* Theme.swift */,
@@ -143,6 +149,7 @@
 				872616D8D14DCAE7D7B8354E /* PadelPointApp.swift */,
 				D025F81E3BB9B89848F70124 /* PaywallView.swift */,
 				176AF64FE4F7795B2C0E6C67 /* SettingsView.swift */,
+				3DAE52B00895550E8B2E077F /* SpectatorView.swift */,
 				E30D7D966D8260C707336631 /* TeamZone.swift */,
 			);
 			path = PadelPoint;
@@ -283,6 +290,7 @@
 				7823EF75D7BA12D33F26334F /* MatchRecord.swift in Sources */,
 				2F5570D4C8DAC86E9AE19136 /* MatchState.swift in Sources */,
 				00DD50E858430FDDA49575FC /* MatchStore.swift in Sources */,
+				24AB1EEDF6005F01B061C938 /* MultipeerMatchSession.swift in Sources */,
 				398EA9BA4FE3C785E44CE3E0 /* PadelPointWatchApp.swift in Sources */,
 				D2B4B6910B5616216E1CDD79 /* PurchaseManager.swift in Sources */,
 				787FA950F9BC4F49658EE50B /* TeamTheme.swift in Sources */,
@@ -310,10 +318,12 @@
 				DDE7D6EE4075AC92600D2CBF /* MatchState.swift in Sources */,
 				A1B644093D860683D6D4FDA9 /* MatchStore.swift in Sources */,
 				1371726CBE9E6B87B157B0A6 /* MatchesPlayedView.swift in Sources */,
+				80EBA7D5E2EE2B79530F72CF /* MultipeerMatchSession.swift in Sources */,
 				4F8587854B47B84FD064115F /* PadelPointApp.swift in Sources */,
 				086E2A04206D8E59677D197B /* PaywallView.swift in Sources */,
 				31A2F9B8D83E7FA60DD2E326 /* PurchaseManager.swift in Sources */,
 				AA7732FAAE0BB5E57D35B8A2 /* SettingsView.swift in Sources */,
+				66AAD9985B8F9C870AAEA99F /* SpectatorView.swift in Sources */,
 				9E100B6BCCE8C753A18C92BA /* TeamTheme.swift in Sources */,
 				BD2336297F3C2FFEBC0021B2 /* TeamZone.swift in Sources */,
 				4776328A35300E75CB0C86E0 /* Theme.swift in Sources */,
