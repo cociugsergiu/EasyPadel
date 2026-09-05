@@ -15,6 +15,9 @@ struct WatchContentView: View {
     @State private var lastScored: Team?
     @State private var pendingSingleTap: DispatchWorkItem?
     @State private var showUndoFlash = false
+    @State private var holdTimer: Timer?
+    @State private var holdFired = false
+    @State private var touchActive = false
 
     private let holdDuration: Double = 1.0
     private let doubleTapWindow: Double = 0.3
@@ -100,27 +103,7 @@ struct WatchContentView: View {
                 }
             }
             .contentShape(Rectangle())
-            .onLongPressGesture(minimumDuration: holdDuration, maximumDistance: 50) {
-                guard store.state.newMatchCountdownDeadline == nil else { return }
-                WKInterfaceDevice.current().play(.retry)
-                store.resetForHoldGesture()
-            } onPressingChanged: { pressing in
-                isHolding = pressing
-            }
-            .onTapGesture {
-                handleTap()
-            }
-            .gesture(
-                DragGesture(minimumDistance: 24)
-                    .onEnded { value in
-                        guard value.translation.width < -30,
-                              abs(value.translation.height) < 40 else { return }
-                        performUndo()
-                    }
-            )
-            .onChange(of: isHolding) { _, holding in
-                holdProgress = holding ? 1 : 0
-            }
+            .gesture(scoringGesture)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -224,14 +207,73 @@ struct WatchContentView: View {
 
     // MARK: Gestures
 
+    /// Tap, double-tap, hold, and swipe-left-to-undo all handled by one
+    /// `DragGesture(minimumDistance: 0)` instead of composing separate
+    /// `.onLongPressGesture`/`.onTapGesture`/`.gesture(DragGesture)`
+    /// modifiers on the same view. That composed approach is what an
+    /// earlier version of this file used, and it does work on some
+    /// watchOS builds — but it's arbitration between multiple independent
+    /// gesture recognizers on one view, and that arbitration isn't
+    /// guaranteed identical across every watchOS version/device: it's been
+    /// confirmed, on at least one real device on watchOS 10.6.2, that the
+    /// long-press recognizer fires correctly but then never releases the
+    /// touch stream back to the tap recognizer, so taps and double-taps
+    /// silently never register at all. A single recognizer has nothing to
+    /// arbitrate with, which is why this is the more robust shape: touch-
+    /// down starts a hold timer (and the progress ring); if it's released
+    /// before the timer fires, the release's own translation decides
+    /// whether it reads as a tap or a left swipe.
+    private var scoringGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { _ in
+                guard !touchActive else { return }
+                touchActive = true
+                holdFired = false
+                isHolding = true
+                withAnimation(.linear(duration: holdDuration)) { holdProgress = 1 }
+
+                holdTimer?.invalidate()
+                holdTimer = Timer.scheduledTimer(withTimeInterval: holdDuration, repeats: false) { _ in
+                    Task { @MainActor in
+                        holdFired = true
+                        isHolding = false
+                        holdProgress = 0
+                        guard store.state.newMatchCountdownDeadline == nil else { return }
+                        WKInterfaceDevice.current().play(.retry)
+                        store.resetForHoldGesture()
+                    }
+                }
+            }
+            .onEnded { value in
+                touchActive = false
+                holdTimer?.invalidate()
+                holdTimer = nil
+                let firedHold = holdFired
+
+                withAnimation(.easeOut(duration: 0.15)) {
+                    isHolding = false
+                    holdProgress = 0
+                }
+
+                guard !firedHold else { return }
+
+                let dx = value.translation.width
+                let dy = value.translation.height
+                let distance = (dx * dx + dy * dy).squareRoot()
+
+                if dx < -30 && abs(dy) < 40 && distance > 24 {
+                    performUndo()
+                } else if distance < 16 {
+                    handleTap()
+                }
+                // Anything else (a longer or more diagonal drag that's
+                // neither a clean tap nor a clean left swipe) is ignored —
+                // better to do nothing than guess wrong mid-rally.
+            }
+    }
+
     /// Single tap scores Team A; a second tap arriving within the double-tap
-    /// window upgrades it to a Team B point instead. Kept as a manual timer
-    /// rather than a composed `TapGesture(count:2)` — nesting that with the
-    /// long-press reset gesture via `.exclusively(before:)` is unreliable on
-    /// watchOS and can swallow taps entirely. `.onLongPressGesture` and
-    /// `.onTapGesture` as two independent modifiers (used above) don't have
-    /// that problem: a long press never fires the tap, and a quick tap never
-    /// triggers the long press.
+    /// window upgrades it to a Team B point instead.
     private func handleTap() {
         guard store.state.winner == nil, store.state.newMatchCountdownDeadline == nil else { return }
 
